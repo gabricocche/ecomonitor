@@ -31,25 +31,28 @@ I dati vengono raccolti via **Wi-Fi** dall'app phyphox e salvati su file CSV per
 
 1. Installa le dipendenze:
    ```bash
-   pip install streamlit pandas requests
+   pip install -r requirements.txt
    ```
 
 2. Apri l'esperimento su phyphox, attiva l'**accesso remoto** e annota l'IP mostrato
 
-3. Modifica `phyphox_reader.py` con il tuo IP, nome e luogo:
-   ```python
-   PHYPHOX_IP = "192.168.1.42"
-   STUDENTE   = "Il tuo nome"
-   LUOGO      = "aula_4A"
+3. Avvia `server.py` in un terminale:
+   ```bash
+   python server.py
    ```
 
-4. Avvia i due script in terminali separati:
+4. Avvia `phyphox_reader.py` indicando i tuoi parametri:
    ```bash
-   python phyphox_reader.py
+   python phyphox_reader.py --ip "192.168.1.42" --studente "Il tuo nome" --luogo "aula_4A"
+   ```
+   Puoi vedere tutte le opzioni con `python phyphox_reader.py --help`.
+
+5. Avvia la dashboard in un altro terminale:
+   ```bash
    streamlit run dashboard.py
    ```
 
-5. Apri il browser su `http://localhost:8501`
+6. Apri il browser su `http://localhost:8501`
 
 ---
 
@@ -57,9 +60,12 @@ I dati vengono raccolti via **Wi-Fi** dall'app phyphox e salvati su file CSV per
 
 ```
 ecomonitor/
+├── server.py           ← server socket per raccolta misure
+├── client.py           ← client per inviare misure al server
 ├── phyphox_reader.py   ← legge i dati da phyphox
-├── dashboard.py        ← dashboard Streamlit
+├── dashboard.py        ← dashboard Streamlit per visualizzazione
 ├── style.css           ← stile della dashboard
+├── requirements.txt    ← dipendenze del progetto
 └── misure.csv          ← dati raccolti (generato automaticamente)
 ```
 

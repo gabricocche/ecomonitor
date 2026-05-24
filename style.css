@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+.stApp {
+  background-color: #0d1f12;
+  color: #f0ede6;
+  font-family: 'DM Mono', monospace;
+}
+
+[data-testid="stSidebar"] {
+  background-color: #132a18 !important;
+}
+
+h1 {
+  background: linear-gradient(90deg, #4caf72, #56c9a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h2 {
+  color: #4caf72 !important;
+  -webkit-text-fill-color: #4caf72 !important;
+}
+
+[data-testid="stMetric"] {
+  background-color: #132a18;
+  border: 1px solid #243d2a;
+  border-left: 3px solid #4caf72;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+[data-testid="stMetricValue"] > div {
+  color: #e8a838 !important;
+  font-size: 2rem;
+}
+
+
+/* tabs */
+.stTabs [data-baseweb="tab-border"],
+.stTabs [data-baseweb="tab-highlight"] { display: none !important; }
+
+.stTabs [data-baseweb="tab"] {
+  color: #7a9e82 !important;
+  border: none !important;
+  padding: 8px 16px;
+}
+.stTabs [aria-selected="true"] {
+  color: #4caf72 !important;
+  border-bottom: 2px solid #4caf72 !important;
+  font-weight: 600;
+}
+
+.stButton > button {
+  background-color: #4caf72 !important;
+  color: #0d1f12 !important;
+  border: none;
+  border-radius: 7px;
+  font-weight: 600;
+}
