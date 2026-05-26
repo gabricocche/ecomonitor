@@ -12,25 +12,29 @@ coda = []
 coda_lock = threading.Lock()
 csv_lock = threading.Lock()
 
-# Crea il file CSV con intestazione
+
 def init_csv():
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(CSV_HEADER)
         print(f"SERVER - File '{CSV_FILE}' creato.")
 
-# Salva una misura nel file CSV (thread-safe)
+
 def salva_csv(dati):
     with csv_lock:
+        # apre una volta sola e controlla il newline finale
+        with open(CSV_FILE, "a+b") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            if size > 0:
+                f.seek(-1, os.SEEK_END)
+                last = f.read(1)
+                if last != b"\n":
+                    f.write(b"\n")
         with open(CSV_FILE, "a", newline="", encoding="utf-8") as f:
-            if os.path.getsize(CSV_FILE) > 0:
-                with open(CSV_FILE, "rb") as rf:
-                    rf.seek(-1, os.SEEK_END)
-                    if rf.read(1) != b'\n':
-                        f.write('\n')
             csv.DictWriter(f, fieldnames=CSV_HEADER).writerow(dati)
 
-# Worker che elabora la coda di misure in background
+
 def worker():
     while True:
         with coda_lock:
@@ -40,7 +44,7 @@ def worker():
         else:
             threading.Event().wait(0.2)
 
-# Gestisce i comandi ricevuti dai client
+
 def gestisci_client(conn, addr):
     print(f"SERVER - Nuova connessione da {addr}")
     studente = None
@@ -61,10 +65,10 @@ def gestisci_client(conn, addr):
             if not raw:
                 break
 
-            parti = raw.upper().split()
+            parti = raw.split()
             if not parti:
                 continue
-            cmd = parti[0]
+            cmd = parti[0].upper()
 
             if cmd == "INVIA":
                 parti = raw.split(maxsplit=3)
@@ -83,18 +87,18 @@ def gestisci_client(conn, addr):
                     "sensore": sensore.lower(),
                     "valore": valore,
                     "luogo": luogo.lower(),
-                    "data_ora": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    "data_ora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 }
                 with coda_lock:
                     coda.append(record)
-                    coda_len = len(coda)
+                    n = len(coda)
                 print(f"SERVER - Misura in coda: {record}")
-                conn.sendall(f"In coda: {coda_len}\n".encode())
+                conn.sendall(f"In coda: {n}\n".encode())
 
             elif cmd == "CODA":
                 with coda_lock:
-                    coda_len = len(coda)
-                conn.sendall(f"Coda: {coda_len}\n".encode())
+                    n = len(coda)
+                conn.sendall(f"Coda: {n}\n".encode())
 
             elif cmd == "ESCI":
                 conn.sendall(b"Arrivederci!\n")
@@ -109,7 +113,7 @@ def gestisci_client(conn, addr):
         conn.close()
         print(f"SERVER - Connessione chiusa: {addr} ({studente})")
 
-# Avvia il server
+
 def main():
     init_csv()
     threading.Thread(target=worker, daemon=True).start()
@@ -121,6 +125,7 @@ def main():
         while True:
             conn, addr = srv.accept()
             threading.Thread(target=gestisci_client, args=(conn, addr), daemon=True).start()
+
 
 if __name__ == "__main__":
     main()

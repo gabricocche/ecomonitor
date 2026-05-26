@@ -27,7 +27,7 @@ I dati vengono raccolti via **Wi-Fi** dall'app phyphox e salvati su file CSV per
 
 ---
 
-## ▶️ Avvio rapido
+## ▶️ Avvio rapido (con phyphox)
 
 1. Installa le dipendenze:
    ```bash
@@ -36,23 +36,33 @@ I dati vengono raccolti via **Wi-Fi** dall'app phyphox e salvati su file CSV per
 
 2. Apri l'esperimento su phyphox, attiva l'**accesso remoto** e annota l'IP mostrato
 
-3. Avvia `server.py` in un terminale:
-   ```bash
-   python server.py
-   ```
-
-4. Avvia `phyphox_reader.py` indicando i tuoi parametri:
+3. Avvia `phyphox_reader.py` in un terminale:
    ```bash
    python phyphox_reader.py --ip "192.168.1.42" --studente "Il tuo nome" --luogo "aula_4A"
    ```
-   Puoi vedere tutte le opzioni con `python phyphox_reader.py --help`.
 
-5. Avvia la dashboard in un altro terminale:
+4. Avvia la dashboard in un altro terminale:
    ```bash
    streamlit run dashboard.py
    ```
 
-6. Apri il browser su `http://localhost:8501`
+5. Apri il browser su `http://localhost:8501`
+
+---
+
+## ▶️ Avvio alternativo (con server TCP + client CLI)
+
+Se preferisci inserire i dati manualmente da riga di comando:
+
+1. Avvia il server:
+   ```bash
+   python server.py
+   ```
+
+2. Avvia il client in un altro terminale:
+   ```bash
+   python client.py
+   ```
 
 ---
 
@@ -60,13 +70,13 @@ I dati vengono raccolti via **Wi-Fi** dall'app phyphox e salvati su file CSV per
 
 ```
 ecomonitor/
-├── server.py           ← server socket per raccolta misure
-├── client.py           ← client per inviare misure al server
-├── phyphox_reader.py   ← legge i dati da phyphox
-├── dashboard.py        ← dashboard Streamlit per visualizzazione
+├── phyphox_reader.py   ← legge i dati da phyphox via Wi-Fi
+├── dashboard.py        ← dashboard Streamlit
 ├── style.css           ← stile della dashboard
-├── requirements.txt    ← dipendenze del progetto
-└── misure.csv          ← dati raccolti (generato automaticamente)
+├── server.py           ← server TCP (per uso via client CLI)
+├── client.py           ← client CLI
+├── requirements.txt
+└── misure.csv          ← database misure (generato automaticamente)
 ```
 
 ---
@@ -80,14 +90,14 @@ Distribuito sotto licenza **[CC BY-NC-ND 4.0](https://creativecommons.org/licens
 
 ## 📬 Contatti
 
-Per qualsiasi domanda o segnalazione:  
+Per qualsiasi domanda o segnalazione:
+- ✉️ aldofredi.nicholas@gmail.com
 - ✉️ mail@gabrielecocchetti.it
 - ✉️ stefanolosio2008@gmail.com
-- ✉️ aldofredi.nicholas@gmail.com
 
 ---
 
 ## ⚠️ Avvertenza
 
-Questo progetto è stato sviluppato nell'ambito di una **UDA scolastica** — Sostenibilità ambientale, Classe 4EI ITIS Informatica.  
+Questo progetto è stato sviluppato nell'ambito dell' **UDA scolastica** di TPI — Sostenibilità ambientale, Classe 4EI.  
 Tutti i contenuti sono da considerarsi **non definitivi** e **non destinati a un riutilizzo professionale**.
