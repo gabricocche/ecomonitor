@@ -11,6 +11,27 @@ with open("style.css", encoding="utf-8") as f:
 CSV_FILE = "misure.csv"
 COLONNE  = ["studente", "sensore", "valore", "luogo", "data_ora"]
 
+UNITA_MISURA = {
+    "rumore": "dB",
+    "suono": "dB",
+    "luce": "lux",
+    "illuminamento": "lux",
+    "temperatura": "°C",
+    "umidita": "%",
+    "umidità": "%",
+    "pressione": "hPa",
+    "accelerazione": "m/s²",
+    "velocita": "m/s",
+    "velocità": "m/s",
+    "magnetico": "µT"
+}
+
+def get_unita(sensore: str) -> str:
+    s = str(sensore).lower()
+    for k, v in UNITA_MISURA.items():
+        if k in s:
+            return v
+    return ""
 
 @st.cache_data(ttl=3)
 def carica_dati(path: str) -> pd.DataFrame:
@@ -230,6 +251,10 @@ stats_sensore = (
     .rename(columns={"count": "N misure", "mean": "Media", "min": "Min", "max": "Max"})
     .round(3).reset_index().rename(columns={"sensore": "Sensore"})
 )
+stats_sensore["Unità"] = stats_sensore["Sensore"].apply(get_unita)
+cols = list(stats_sensore.columns)
+cols.insert(1, cols.pop(cols.index("Unità")))
+stats_sensore = stats_sensore[cols]
 st.dataframe(stats_sensore, use_container_width=True, hide_index=True)
 
 st.divider()
@@ -241,13 +266,16 @@ tab1, tab2, tab3, tab4 = st.tabs(["Per luogo", "Per studente", "Andamento tempor
 with tab1:
     for sensore in df["sensore"].unique():
         df_s = df[df["sensore"] == sensore]
+        unita = get_unita(sensore)
+        etichetta = f"Media {sensore} ({unita})" if unita else f"Media {sensore}"
+        
         media_luogo = (
             df_s.groupby("luogo")["valore"].mean().reset_index()
-            .rename(columns={"luogo": "Luogo", "valore": f"Media {sensore}"})
-            .sort_values(f"Media {sensore}", ascending=False)
+            .rename(columns={"luogo": "Luogo", "valore": etichetta})
+            .sort_values(etichetta, ascending=False)
         )
         st.markdown(f"**Sensore: {sensore}**")
-        st.bar_chart(media_luogo, x="Luogo", y=f"Media {sensore}", color="#4caf72")
+        st.bar_chart(media_luogo, x="Luogo", y=etichetta, color="#4caf72")
 
 with tab2:
     misure_studente = (
@@ -263,27 +291,35 @@ with tab3:
         if df_s.empty:
             st.info(f"Nessun dato valido per {sensore}.")
             continue
+            
+        unita = get_unita(sensore)
+        col_valore = f"valore ({unita})" if unita else "valore"
+        df_s.rename(columns={"valore": col_valore}, inplace=True)
+            
         if df_s["data_ora"].nunique() <= 1:
             df_s = df_s.reset_index(drop=True)
             df_s["campione"] = df_s.index + 1
             st.markdown(f"**Andamento {sensore} (campioni sequenziali)**")
-            st.line_chart(df_s, x="campione", y="valore", color="#4caf72")
+            st.line_chart(df_s, x="campione", y=col_valore, color="#4caf72")
         else:
             df_s = df_s.sort_values("data_ora")
             st.markdown(f"**Andamento {sensore} nel tempo**")
-            st.line_chart(df_s, x="data_ora", y="valore", color="#4caf72")
+            st.line_chart(df_s, x="data_ora", y=col_valore, color="#4caf72")
 
 with tab4:
     st.markdown("Luoghi ordinati per valore medio (dal più alto al più basso).")
     for sensore in df["sensore"].unique():
         df_s = df[df["sensore"] == sensore]
+        unita = get_unita(sensore)
+        col_media = f"Media ({unita})" if unita else "Media"
+        
         classifica = (
             df_s.groupby("luogo")["valore"].mean().reset_index()
-            .rename(columns={"luogo": "Luogo", "valore": "Media"})
-            .sort_values("Media", ascending=False).reset_index(drop=True)
+            .rename(columns={"luogo": "Luogo", "valore": col_media})
+            .sort_values(col_media, ascending=False).reset_index(drop=True)
         )
         classifica.index += 1
-        classifica["Media"] = classifica["Media"].round(3)
+        classifica[col_media] = classifica[col_media].round(3)
         st.markdown(f"**Classifica – {sensore}**")
         st.dataframe(classifica, use_container_width=True)
 
@@ -293,6 +329,7 @@ st.divider()
 st.subheader("Tabella completa delle misure")
 df_display = df[COLONNE].copy().sort_values("data_ora", ascending=False).reset_index(drop=True)
 df_display.index += 1
+df_display.insert(2, "unità", df_display["sensore"].apply(get_unita))
 st.dataframe(df_display, use_container_width=True)
 
 csv_bytes = df_display.to_csv(index=False).encode("utf-8")
